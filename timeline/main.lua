@@ -1,5 +1,6 @@
 require('timeline')
 require('actors/oscillator')
+require('actors/dot')
 local love = require "love"
 
 local fontHeight = 14
@@ -8,6 +9,21 @@ love.graphics.setFont(font)
 
 local timeline = Timeline:new()
 local oscillator = Oscillator:new(timeline)
+
+local actors = { }
+local function createActors()
+    for i = 0, 2 do
+        local dot = Dot:new()
+        dot:position(
+            oscillator:positionFunction({
+                frequency = math.pow(2, i),
+                amplitude = 25,
+                xScale = 50
+            }))
+        table.insert(actors, dot)
+    end
+end
+createActors()
 
 function love.keypressed(key, _, _)
     if key == "escape" then
@@ -22,9 +38,16 @@ end
 function love.draw()
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.clear()
-    love.graphics.print(timeline:time(), 10, 10)
+    love.graphics.print(string.format("%.3f", timeline:time()), 10, 10)
 
-    local pos = oscillator:position()
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.circle("fill", pos[1] + 100, pos[2] + 100, 5)
+    love.graphics.push()
+    love.graphics.translate(100, 100)
+    for i, actor in ipairs(actors) do
+        love.graphics.push()
+        love.graphics.translate(0, i * 110)
+        actor:draw()
+        love.graphics.pop()
+    end
+    love.graphics.pop()
 end
